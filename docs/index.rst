@@ -18,7 +18,7 @@ Reference: Ishwaran, H., Kogalur, U. B., Blackstone, E. H., & Lauer, M. S. (2008
 Installation
 ------------
 
-:: python
+.. code-block:: python
 >>> pip install random-survival-forest
 
 Contribute
