@@ -3,9 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Read the Docs Template's documentation!
-==================================================
-
 Contents:
 
 .. toctree::
@@ -13,7 +10,6 @@ Contents:
    :glob:
 
    *
-
 
 
 Random Survival Forest
@@ -26,17 +22,6 @@ Ishwaran, H., Kogalur, U. B., Blackstone, E. H., & Lauer, M. S. (2008).
 Random survival forests.
 The annals of applied statistics, 2(3), 841-860.
 
-Installation
-------------
-
-.. code:: sh
-
-  $ pip install random-survival-forest
-
-Contribute
-----------
-
-- Source Code: https://github.com/julianspaeth/random-survival-forest
 
 Getting Started
 ---------------
@@ -54,12 +39,20 @@ Getting Started
     >>> round(c_val, 3)
     0.72
 
+
 Support
 -------
 
 If you are having issues or feedback, please let me know.
 
 julian.spaeth@student.uni-tuebinden.de
+
+
+Contribute
+----------
+
+- Source Code: https://github.com/julianspaeth/random-survival-forest
+
 
 License
 -------
