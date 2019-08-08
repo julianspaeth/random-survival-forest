@@ -2,6 +2,4 @@
 Usage
 ========
 
-To use this template, simply update it::
-
-	import read-the-docs-template
+	from random_survival_forest import RandomSurvivalForest
