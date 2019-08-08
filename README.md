@@ -1,6 +1,6 @@
 Random Survival Forest
 ==================
-[![Build Status](https://api.travis-ci.com/julianspaeth/random-survival-forest.svg?branch=master)](https://travis-ci.org/julianspaeth/random-survival-forest)
+[![Build Status](https://api.travis-ci.com/julianspaeth/random-survival-forest.svg?branch=master)](https://travis-ci.org/julianspaeth/random-survival-forest) [![Documentation Status](https://readthedocs.org/projects/random-survival-forest/badge/?version=latest)](https://random-survival-forest.readthedocs.io/en/latest/?badge=latest)
 
 The Random Survival Forest package provides a python implementation of the survival prediction method originally published by Ishwaran et al. (2008).
 
