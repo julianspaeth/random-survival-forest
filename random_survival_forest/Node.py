@@ -1,6 +1,5 @@
 import numpy as np
 from lifelines import NelsonAalenFitter
-
 from . import splitting
 
 

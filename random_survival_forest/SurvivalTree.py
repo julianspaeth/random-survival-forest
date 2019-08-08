@@ -1,5 +1,5 @@
 import numpy as np
-from src.random_survival_forest.Node import Node
+from .Node import Node
 from . import splitting
 
 
