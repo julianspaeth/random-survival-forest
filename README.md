@@ -1,5 +1,5 @@
-Random Survival Forest
-==================
+# Random Survival Forest
+
 [![Build Status](https://api.travis-ci.com/julianspaeth/random-survival-forest.svg?branch=master)](https://travis-ci.org/julianspaeth/random-survival-forest) [![Documentation Status](https://readthedocs.org/projects/random-survival-forest/badge/?version=latest)](https://random-survival-forest.readthedocs.io/en/latest/?badge=latest)
 
 The Random Survival Forest package provides a python implementation of the survival prediction method originally published by Ishwaran et al. (2008).
@@ -9,18 +9,17 @@ Ishwaran, H., Kogalur, U. B., Blackstone, E. H., & Lauer, M. S. (2008).
 Random survival forests. 
 The annals of applied statistics, 2(3), 841-860.
 
-Installation
-------------
+## Installation
 ```sh
 $ pip install random-survival-forest
 ```
-Contribute
-----------
+
+## Contribute
 
 - Source Code: https://github.com/julianspaeth/random-survival-forest
 
-Getting Started
----------------
+## Getting Started
+
 ```python
 >>> from random_survival_forest import RandomSurvivalForest
 >>> timeline = range(0, 10, 1)
@@ -33,13 +32,12 @@ Getting Started
 >>> round(c_val, 3)
 0.72
 ```
-Support
--------
+
+## Support
 
 If you are having issues or feedback, please let me know.
 
 julian.spaeth@student.uni-tuebinden.de
 
-License
--------
+## License
 MIT
