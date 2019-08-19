@@ -1,9 +1,18 @@
-from distutils.core import setup
+from setuptools import setup
+
+with open('README.md') as f:
+    readme = f.read()
+
+with open('LICENSE.txt') as f:
+    license = f.read()
+
 setup(
   name = 'random_survival_forest',         # How you named your package folder (MyLib)
   packages = ['random_survival_forest'],   # Chose the same as "name"
   version = '0.1',      # Start with a small number and increase it with every change you make
-  license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
+  license=license,        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
+  long_description=readme,
+  long_description_content_type="text/markdown",
   description = 'A Random Survival Forest implementation inspired by Ishwaran et al.',   # Give a short description about your library
   author = 'Julian Späth',                   # Type in your name
   author_email = 'spaethju@posteo.de',      # Type in your E-Mail
