@@ -14,7 +14,7 @@ class Node:
     chf_terminal = None
     terminal = False
 
-    def __init__(self, x, y, tree, f_idxs, n_features, unique_deaths=1, min_leaf=1):
+    def __init__(self, x, y, tree, f_idxs, n_features, unique_deaths=1, min_leaf=1, random_state=None):
         """
         A Node of the Survival Tree.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
@@ -32,6 +32,7 @@ class Node:
         self.f_idxs = f_idxs
         self.n_features = n_features
         self.unique_deaths = unique_deaths
+        self.random_state = random_state
         self.min_leaf = min_leaf
         self.grow_tree()
 
@@ -52,14 +53,18 @@ class Node:
             self.compute_terminal_node()
             return self
 
-        lf_idxs = np.random.permutation(self.x.shape[1])[:self.n_features]
-        rf_idxs = np.random.permutation(self.x.shape[1])[:self.n_features]
+        if self.random_state is None:
+            lf_idxs = np.random.permutation(self.x.shape[1])[:self.n_features]
+            rf_idxs = np.random.permutation(self.x.shape[1])[:self.n_features]
+        else:
+            lf_idxs = np.random.RandomState(seed=self.random_state).permutation(self.x.shape[1])[:self.n_features]
+            rf_idxs = np.random.RandomState(seed=self.random_state).permutation(self.x.shape[1])[:self.n_features]
 
         self.lhs = Node(self.x.iloc[lhs_idxs_opt, :], self.y.iloc[lhs_idxs_opt, :], self.tree,
-                        lf_idxs, self.n_features, min_leaf=self.min_leaf)
+                        lf_idxs, self.n_features, min_leaf=self.min_leaf, random_state=self.random_state)
 
         self.rhs = Node(self.x.iloc[rhs_idxs_opt, :], self.y.iloc[rhs_idxs_opt, :], self.tree,
-                        rf_idxs, self.n_features, min_leaf=self.min_leaf)
+                        rf_idxs, self.n_features, min_leaf=self.min_leaf, random_state=self.random_state)
 
         return self
 

@@ -14,7 +14,7 @@ class RandomSurvivalForest:
     oob_score = None
     trees = []
 
-    def __init__(self, n_estimators=2, timeline=None, min_leaf=1, unique_deaths=1, n_jobs=None):
+    def __init__(self, n_estimators=2, timeline=None, min_leaf=1, unique_deaths=1, n_jobs=None, random_state=None):
         """
         A Random Survival Forest is a tool especially designed for survival analysis.
         :param n_estimators: The numbers of trees in the forest.
@@ -29,6 +29,7 @@ class RandomSurvivalForest:
         self.timeline = timeline
         self.unique_deaths = unique_deaths
         self.n_jobs = n_jobs
+        self.random_state = random_state
 
     def fit(self, x, y):
         """
@@ -38,6 +39,7 @@ class RandomSurvivalForest:
         in the second with the shape [n_samples, 2]
         :return: self: object
         """
+
         self.x = x
         self.y = y
         if self.n_jobs == -1:
@@ -58,10 +60,13 @@ class RandomSurvivalForest:
         :return: SurvivalTree
         """
         n_features = int(round(np.sqrt(self.x.shape[1]), 0))
-        f_idxs = np.random.permutation(self.x.shape[1])[:n_features]
+        if self.random_state is None:
+            f_idxs = np.random.permutation(self.x.shape[1])[:n_features]
+        else:
+            f_idxs = np.random.RandomState(seed=self.random_state).permutation(self.x.shape[1])[:n_features]
         tree = SurvivalTree(self.x.iloc[bootstrap_idx, :], self.y.iloc[bootstrap_idx, :],
                             f_idxs=f_idxs, n_features=n_features, timeline=self.timeline,
-                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf)
+                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf, random_state=self.random_state)
         return tree
 
     def compute_oob_ensembles(self):
@@ -116,20 +121,17 @@ class RandomSurvivalForest:
         :param data: Data to draw bootstrap samples of.
         :return: Bootstrap indices for each of the trees
         """
-        bootstrap_idxs = Parallel(n_jobs=self.n_jobs)(delayed(draw_bootstrap_sample)(data)
-                                                      for q in range(self.n_estimators))
+        bootstrap_idxs = []
+        for i in range(self.n_estimators):
+            no_samples = len(data)
+            data_rows = list(data.index)
+            if self.random_state is None:
+                bootstrap_idx = np.random.choice(data_rows, no_samples)
+            else:
+                np.random.seed(self.random_state + i)
+                bootstrap_idx = np.random.choice(data_rows, no_samples)
+
+            bootstrap_idxs.append(bootstrap_idx)
 
         return bootstrap_idxs
 
-
-def draw_bootstrap_sample(data):
-    """
-    Draw bootstrap sample
-    :param data: Data to draw bootstrap sample of.
-    :return: Bootstrap indices
-    """
-    no_samples = len(data)
-    data_rows = list(data.index)
-    bootstrap_idx = np.random.choice(data_rows, no_samples)
-
-    return bootstrap_idx
