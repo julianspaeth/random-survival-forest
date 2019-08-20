@@ -3,13 +3,10 @@ from setuptools import setup
 with open('README.md') as f:
     readme = f.read()
 
-with open('LICENSE.txt') as f:
-    license = f.read()
-
 setup(
   name = 'random_survival_forest',         # How you named your package folder (MyLib)
   packages = ['random_survival_forest'],   # Chose the same as "name"
-  version = '0.3',      # Start with a small number and increase it with every change you make
+  version = '0.4',      # Start with a small number and increase it with every change you make
   license="MIT License",        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   long_description=readme,
   long_description_content_type="text/markdown",
