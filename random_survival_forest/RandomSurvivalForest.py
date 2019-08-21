@@ -13,6 +13,7 @@ class RandomSurvivalForest:
     oob_idxs = None
     oob_score = None
     trees = []
+    random_states = []
 
     def __init__(self, n_estimators=2, timeline=None, min_leaf=1, unique_deaths=1, n_jobs=None, random_state=None):
         """
@@ -46,14 +47,15 @@ class RandomSurvivalForest:
             self.n_jobs = multiprocessing.cpu_count()
         elif self.n_jobs is None:
             self.n_jobs = 1
+        self.random_states = np.random.RandomState(seed=self.random_state).randint(0, 2**32-1, self.n_estimators)
         self.bootstrap_idxs = self.draw_bootstrap_samples(x)
-        self.trees = Parallel(n_jobs=self.n_jobs)(delayed(self.create_tree)(bootstrap_idx)
-                                                  for bootstrap_idx in self.bootstrap_idxs)
+        self.trees = Parallel(n_jobs=self.n_jobs)(delayed(self.create_tree)(i)
+                                                  for i in range(self.n_estimators))
         self.oob_score = self.compute_oob_score
 
         return self
 
-    def create_tree(self, bootstrap_idx):
+    def create_tree(self, i):
         """
         Grows a survival tree for the bootstrap samples.
         :param bootstrap_idx: Indices of the bootstrap samples.
@@ -63,10 +65,13 @@ class RandomSurvivalForest:
         if self.random_state is None:
             f_idxs = np.random.permutation(self.x.shape[1])[:n_features]
         else:
-            f_idxs = np.random.RandomState(seed=self.random_state).permutation(self.x.shape[1])[:n_features]
-        tree = SurvivalTree(self.x.iloc[bootstrap_idx, :], self.y.iloc[bootstrap_idx, :],
+            f_idxs = np.random.RandomState(seed=self.random_states[i]).permutation(self.x.shape[1])[:n_features]
+            print(f_idxs)
+
+        tree = SurvivalTree(self.x.iloc[self.bootstrap_idxs[i], :], self.y.iloc[self.bootstrap_idxs[i], :],
                             f_idxs=f_idxs, n_features=n_features, timeline=self.timeline,
-                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf, random_state=self.random_state)
+                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf,
+                            random_state=self.random_states[i])
         return tree
 
     def compute_oob_ensembles(self):
@@ -128,10 +133,8 @@ class RandomSurvivalForest:
             if self.random_state is None:
                 bootstrap_idx = np.random.choice(data_rows, no_samples)
             else:
-                np.random.seed(self.random_state + i)
+                np.random.seed(self.random_states[i])
                 bootstrap_idx = np.random.choice(data_rows, no_samples)
-
             bootstrap_idxs.append(bootstrap_idx)
 
         return bootstrap_idxs
-
