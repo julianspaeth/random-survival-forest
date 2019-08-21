@@ -66,7 +66,6 @@ class RandomSurvivalForest:
             f_idxs = np.random.permutation(self.x.shape[1])[:n_features]
         else:
             f_idxs = np.random.RandomState(seed=self.random_states[i]).permutation(self.x.shape[1])[:n_features]
-            print(f_idxs)
 
         tree = SurvivalTree(self.x.iloc[self.bootstrap_idxs[i], :], self.y.iloc[self.bootstrap_idxs[i], :],
                             f_idxs=f_idxs, n_features=n_features, timeline=self.timeline,
