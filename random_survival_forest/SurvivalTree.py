@@ -5,7 +5,7 @@ from .tree_helper import create_new_indices
 
 class SurvivalTree:
 
-    def __init__(self, x, y, f_idxs, n_features, timeline, unique_deaths=1, min_leaf=1, random_state=None):
+    def __init__(self, x, y, f_idxs, n_features, timeline, unique_deaths=3, min_leaf=3, random_state=None):
         """
         A Survival Tree to predict survival.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].

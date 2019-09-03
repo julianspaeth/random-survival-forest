@@ -15,7 +15,7 @@ class Node:
     chf_terminal = None
     terminal = False
 
-    def __init__(self, x, y, tree, f_idxs, n_features, unique_deaths=1, min_leaf=1, random_state=None):
+    def __init__(self, x, y, tree, f_idxs, n_features, unique_deaths=3, min_leaf=3, random_state=None):
         """
         A Node of the Survival Tree.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].

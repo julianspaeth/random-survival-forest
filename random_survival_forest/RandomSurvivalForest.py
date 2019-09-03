@@ -15,7 +15,7 @@ class RandomSurvivalForest:
     trees = []
     random_states = []
 
-    def __init__(self, n_estimators=2, timeline=None, min_leaf=1, unique_deaths=1, n_jobs=None, random_state=None):
+    def __init__(self, n_estimators=2, min_leaf=3, unique_deaths=3, timeline=None, n_jobs=None, random_state=None):
         """
         A Random Survival Forest is a tool especially designed for survival analysis.
         :param n_estimators: The numbers of trees in the forest.
@@ -67,7 +67,7 @@ class RandomSurvivalForest:
         else:
             f_idxs = np.random.RandomState(seed=self.random_states[i]).permutation(self.x.shape[1])[:n_features]
 
-        tree = SurvivalTree(self.x.iloc[self.bootstrap_idxs[i], :], self.y.iloc[self.bootstrap_idxs[i], :],
+        tree = SurvivalTree(x=self.x.iloc[self.bootstrap_idxs[i], :], y=self.y.iloc[self.bootstrap_idxs[i], :],
                             f_idxs=f_idxs, n_features=n_features, timeline=self.timeline,
                             unique_deaths=self.unique_deaths, min_leaf=self.min_leaf,
                             random_state=self.random_states[i])
