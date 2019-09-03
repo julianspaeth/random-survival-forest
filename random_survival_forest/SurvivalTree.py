@@ -1,6 +1,6 @@
-import numpy as np
 from .Node import Node
 from . import splitting
+from .tree_helper import create_new_indices
 
 
 class SurvivalTree:
@@ -41,12 +41,7 @@ class SurvivalTree:
         """
         self.score, self.split_val, self.split_var, lhs_idxs_opt, rhs_idxs_opt = splitting.find_split(self)
 
-        if self.random_state is None:
-            lf_idxs = np.random.permutation(self.x.shape[1])[:self.n_features]
-            rf_idxs = np.random.permutation(self.x.shape[1])[:self.n_features]
-        else:
-            lf_idxs = np.random.RandomState(seed=self.random_state).permutation(self.x.shape[1])[:self.n_features]
-            rf_idxs = np.random.RandomState(seed=self.random_state).permutation(self.x.shape[1])[:self.n_features]
+        lf_idxs, rf_idxs = create_new_indices(self.random_state, self.x, self.n_features)
 
         self.lhs = Node(x=self.x.iloc[lhs_idxs_opt, :], y=self.y.iloc[lhs_idxs_opt, :],
                         tree=self, f_idxs=lf_idxs, n_features=self.n_features,

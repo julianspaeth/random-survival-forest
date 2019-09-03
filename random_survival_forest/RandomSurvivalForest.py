@@ -58,7 +58,7 @@ class RandomSurvivalForest:
     def create_tree(self, i):
         """
         Grows a survival tree for the bootstrap samples.
-        :param bootstrap_idx: Indices of the bootstrap samples.
+        :param i: Indices
         :return: SurvivalTree
         """
         n_features = int(round(np.sqrt(self.x.shape[1]), 0))

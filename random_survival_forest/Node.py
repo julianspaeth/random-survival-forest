@@ -1,6 +1,7 @@
 import numpy as np
 from lifelines import NelsonAalenFitter
 from . import splitting
+from.tree_helper import create_new_indices
 
 
 class Node:
@@ -53,12 +54,7 @@ class Node:
             self.compute_terminal_node()
             return self
 
-        if self.random_state is None:
-            lf_idxs = np.random.permutation(self.x.shape[1])[:self.n_features]
-            rf_idxs = np.random.permutation(self.x.shape[1])[:self.n_features]
-        else:
-            lf_idxs = np.random.RandomState(seed=self.random_state).permutation(self.x.shape[1])[:self.n_features]
-            rf_idxs = np.random.RandomState(seed=self.random_state).permutation(self.x.shape[1])[:self.n_features]
+        lf_idxs, rf_idxs = create_new_indices(self.random_state, self.x, self.n_features)
 
         self.lhs = Node(self.x.iloc[lhs_idxs_opt, :], self.y.iloc[lhs_idxs_opt, :], self.tree,
                         lf_idxs, self.n_features, min_leaf=self.min_leaf, random_state=self.random_state)
