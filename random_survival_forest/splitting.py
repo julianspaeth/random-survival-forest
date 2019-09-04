@@ -58,12 +58,12 @@ def logrank_statistics(x, y, feature, min_leaf):
         feature2 = list(x_feature[x_feature > split_val].index)
         if len(feature1) < min_leaf or len(feature2) < min_leaf:
             continue
-        durations_A = y.iloc[feature1, 0]
-        event_observed_A = y.iloc[feature1, 1]
-        durations_B = y.iloc[feature2, 0]
-        event_observed_B = y.iloc[feature2, 1]
-        results = logrank_test(durations_A=durations_A, durations_B=durations_B,
-                               event_observed_A=event_observed_A, event_observed_B=event_observed_B)
+        durations_a = y.iloc[feature1, 0]
+        event_observed_a = y.iloc[feature1, 1]
+        durations_b = y.iloc[feature2, 0]
+        event_observed_b = y.iloc[feature2, 1]
+        results = logrank_test(durations_A=durations_a, durations_B=durations_b,
+                               event_observed_A=event_observed_a, event_observed_B=event_observed_b)
         score = results.test_statistic
 
         if score > score_opt:

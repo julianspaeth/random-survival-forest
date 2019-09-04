@@ -59,6 +59,8 @@ class RandomSurvivalForest:
     def create_tree(self, x, y, i):
         """
         Grows a survival tree for the bootstrap samples.
+        :param y: label data frame y with survival time as the first column and event as second
+        :param x: feature data frame x
         :param i: Indices
         :return: SurvivalTree
         """
