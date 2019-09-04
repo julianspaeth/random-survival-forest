@@ -8,6 +8,7 @@ import multiprocessing
 
 class RandomSurvivalForest:
     bootstrap_idxs = None
+    bootstraps = []
     oob_idxs = None
     oob_score = None
     trees = []
@@ -48,9 +49,11 @@ class RandomSurvivalForest:
 
         trees = Parallel(n_jobs=self.n_jobs)(delayed(self.create_tree)(x, y, i) for i in range(self.n_estimators))
 
-        for tree in trees:
-            if tree.prediction_possible is True:
-                self.trees.append(tree)
+
+        for i in range(len(trees)):
+            if trees[i].prediction_possible is True:
+                self.trees.append(trees[i])
+                self.bootstraps.append(self.bootstrap_idxs[i])
 
         self.oob_score = self.compute_oob_score(x, y)
 
@@ -87,7 +90,7 @@ class RandomSurvivalForest:
             denominator = 0
             numerator = 0
             for b in range(len(self.trees)):
-                if sample_idx not in self.bootstrap_idxs[b]:
+                if sample_idx not in self.bootstraps[b]:
                     sample = x.iloc[sample_idx].to_list()
                     chf = self.trees[b].predict(sample)
                     denominator = denominator + 1
