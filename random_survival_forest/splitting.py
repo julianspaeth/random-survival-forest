@@ -47,33 +47,29 @@ def logrank_statistics(x, y, feature, min_leaf):
     :param min_leaf: Minimum number of leafs for each split.
     :return: best score, best split value, left indices, right indices
     """
-    x = x.reset_index(drop=True)
-    y = y.reset_index(drop=True)
-    x = x.iloc[:, feature]
+    x_feature = x.reset_index(drop=True).iloc[:, feature]
     score_opt = 0
     split_val_opt = None
     lhs_idxs = None
     rhs_idxs = None
 
-    for split_val in x.sort_values(ascending=True, kind="quicksort").unique():
-        feature1 = x[x <= split_val].index
-        feature2 = x[x > split_val].index
-        if feature1.shape[0] < min_leaf or feature2.shape[0] < min_leaf:
+    for split_val in x_feature.sort_values(ascending=True, kind="quicksort").unique():
+        feature1 = list(x_feature[x_feature <= split_val].index)
+        feature2 = list(x_feature[x_feature > split_val].index)
+        if len(feature1) < min_leaf or len(feature2) < min_leaf:
             continue
-        y1 = y.iloc[feature1, :]
-        y2 = y.iloc[feature2, :]
-        t1 = y1.iloc[:, 0]
-        e1 = y1.iloc[:, 1]
-        t2 = y2.iloc[:, 0]
-        e2 = y2.iloc[:, 1]
-        results = logrank_test(durations_A=t1, durations_B=t2,
-                               event_observed_A=e1, event_observed_B=e2)
+        durations_A = y.iloc[feature1, 0]
+        event_observed_A = y.iloc[feature1, 1]
+        durations_B = y.iloc[feature2, 0]
+        event_observed_B = y.iloc[feature2, 1]
+        results = logrank_test(durations_A=durations_A, durations_B=durations_B,
+                               event_observed_A=event_observed_A, event_observed_B=event_observed_B)
         score = results.test_statistic
 
         if score > score_opt:
             score_opt = round(score, 3)
             split_val_opt = round(split_val, 3)
-            lhs_idxs = list(feature1)
-            rhs_idxs = list(feature2)
+            lhs_idxs = feature1
+            rhs_idxs = feature2
 
     return score_opt, split_val_opt, lhs_idxs, rhs_idxs

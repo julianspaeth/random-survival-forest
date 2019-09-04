@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def create_new_indices(random_state, x, n_features):
+def select_new_feature_indices(random_state, x, n_features):
 
     if random_state is None:
         lf_idxs = np.random.permutation(x.shape[1])[:n_features]

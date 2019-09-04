@@ -1,9 +1,11 @@
-from .Node import Node
-from . import splitting
-from .tree_helper import create_new_indices
+from Node import Node
+import splitting
+from tree_helper import select_new_feature_indices
 
 
 class SurvivalTree:
+
+    prediction_possible = None
 
     def __init__(self, x, y, f_idxs, n_features, timeline, unique_deaths=3, min_leaf=3, random_state=None):
         """
@@ -39,19 +41,26 @@ class SurvivalTree:
         Grow the survival tree recursively as nodes.
         :return: self
         """
+        unique_deaths = self.y.iloc[:, 1].reset_index().drop_duplicates().sum()[1]
+
         self.score, self.split_val, self.split_var, lhs_idxs_opt, rhs_idxs_opt = splitting.find_split(self)
 
-        lf_idxs, rf_idxs = create_new_indices(self.random_state, self.x, self.n_features)
+        if self.split_var is not None and unique_deaths > self.unique_deaths:
+            self.prediction_possible = True
+            lf_idxs, rf_idxs = select_new_feature_indices(self.random_state, self.x, self.n_features)
 
-        self.lhs = Node(x=self.x.iloc[lhs_idxs_opt, :], y=self.y.iloc[lhs_idxs_opt, :],
-                        tree=self, f_idxs=lf_idxs, n_features=self.n_features,
-                        unique_deaths=self.unique_deaths, min_leaf=self.min_leaf, random_state=self.random_state)
+            self.lhs = Node(x=self.x.iloc[lhs_idxs_opt, :], y=self.y.iloc[lhs_idxs_opt, :],
+                            tree=self, f_idxs=lf_idxs, n_features=self.n_features,
+                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf, random_state=self.random_state)
 
-        self.rhs = Node(x=self.x.iloc[rhs_idxs_opt, :], y=self.y.iloc[rhs_idxs_opt, :],
-                        tree=self, f_idxs=rf_idxs, n_features=self.n_features,
-                        unique_deaths=self.unique_deaths, min_leaf=self.min_leaf, random_state=self.random_state)
+            self.rhs = Node(x=self.x.iloc[rhs_idxs_opt, :], y=self.y.iloc[rhs_idxs_opt, :],
+                            tree=self, f_idxs=rf_idxs, n_features=self.n_features,
+                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf, random_state=self.random_state)
 
-        return self
+            return self
+        else:
+            self.prediction_possible = False
+            return self
 
     def predict(self, x):
         """
