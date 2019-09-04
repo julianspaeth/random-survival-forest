@@ -1,7 +1,6 @@
 from lifelines import NelsonAalenFitter
-
-import splitting
-from tree_helper import select_new_feature_indices
+from .splitting import find_split
+from .tree_helper import select_new_feature_indices
 
 
 class Node:
@@ -48,7 +47,7 @@ class Node:
             self.compute_terminal_node()
             return self
 
-        self.score, self.split_val, self.split_var, lhs_idxs_opt, rhs_idxs_opt = splitting.find_split(self)
+        self.score, self.split_val, self.split_var, lhs_idxs_opt, rhs_idxs_opt = find_split(self)
 
         if self.split_var is None:
             self.compute_terminal_node()

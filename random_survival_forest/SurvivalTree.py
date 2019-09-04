@@ -1,6 +1,6 @@
-from Node import Node
-import splitting
-from tree_helper import select_new_feature_indices
+from .Node import Node
+from .splitting import find_split
+from .tree_helper import select_new_feature_indices
 
 
 class SurvivalTree:
@@ -43,7 +43,7 @@ class SurvivalTree:
         """
         unique_deaths = self.y.iloc[:, 1].reset_index().drop_duplicates().sum()[1]
 
-        self.score, self.split_val, self.split_var, lhs_idxs_opt, rhs_idxs_opt = splitting.find_split(self)
+        self.score, self.split_val, self.split_var, lhs_idxs_opt, rhs_idxs_opt = find_split(self)
 
         if self.split_var is not None and unique_deaths > self.unique_deaths:
             self.prediction_possible = True

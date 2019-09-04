@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from SurvivalTree import SurvivalTree
-from scoring import concordance_index
+from .SurvivalTree import SurvivalTree
+from .scoring import concordance_index
 from joblib import Parallel, delayed
 import multiprocessing
 
