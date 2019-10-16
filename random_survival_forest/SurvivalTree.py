@@ -7,14 +7,13 @@ class SurvivalTree:
 
     prediction_possible = None
 
-    def __init__(self, x, y, f_idxs, n_features, timeline, unique_deaths=3, min_leaf=3, random_state=None):
+    def __init__(self, x, y, f_idxs, n_features, unique_deaths=3, min_leaf=3, random_state=None):
         """
         A Survival Tree to predict survival.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
         :param y: The target values as a Dataframe with the survival time in the first column and the event.
         :param f_idxs: The indices of the features to use.
         :param n_features: The number of features to use.
-        :param timeline: The timeline used for the prediction.
         :param unique_deaths: The minimum number of unique deaths required to be at a leaf node.
         :param min_leaf: The minimum number of samples required to be at a leaf node. A split point at any depth will
         only be considered if it leaves at least min_leaf training samples in each of the left and right branches.
@@ -23,7 +22,6 @@ class SurvivalTree:
         self.y = y
         self.f_idxs = f_idxs
         self.n_features = n_features
-        self.timeline = timeline
         self.min_leaf = min_leaf
         self.unique_deaths = unique_deaths
         self.random_state = random_state
