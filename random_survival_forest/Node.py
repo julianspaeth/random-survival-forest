@@ -72,7 +72,7 @@ class Node:
         self.chf = NelsonAalenFitter()
         t = self.y.iloc[:, 0]
         e = self.y.iloc[:, 1]
-        self.chf.fit(t, event_observed=e, timeline=self.tree.timeline)
+        self.chf.fit(t, event_observed=e)
 
         return self
 
