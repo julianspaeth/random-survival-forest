@@ -14,19 +14,18 @@ class RandomSurvivalForest:
     trees = []
     random_states = []
 
-    def __init__(self, n_estimators=2, min_leaf=3, unique_deaths=3, timeline=None, n_jobs=None, random_state=None):
+    def __init__(self, n_estimators=2, min_leaf=3, unique_deaths=3, n_jobs=None, random_state=None):
         """
         A Random Survival Forest is a prediction model especially designed for survival analysis.
         :param n_estimators: The numbers of trees in the forest.
-        :param timeline: The timeline used for the prediction.
         :param min_leaf: The minimum number of samples required to be at a leaf node. A split point at any depth will
         only be considered if it leaves at least min_leaf training samples in each of the left and right branches.
         :param unique_deaths: The minimum number of unique deaths required to be at a leaf node.
+        :param random_state: The random state to create reproducible results.
         :param n_jobs: The number of jobs to run in parallel for fit. None means 1.
         """
         self.n_estimators = n_estimators
         self.min_leaf = min_leaf
-        self.timeline = timeline
         self.unique_deaths = unique_deaths
         self.n_jobs = n_jobs
         self.random_state = random_state
@@ -48,7 +47,6 @@ class RandomSurvivalForest:
         self.bootstrap_idxs = self.draw_bootstrap_samples(x)
 
         trees = Parallel(n_jobs=self.n_jobs)(delayed(self.create_tree)(x, y, i) for i in range(self.n_estimators))
-
 
         for i in range(len(trees)):
             if trees[i].prediction_possible is True:
@@ -74,9 +72,8 @@ class RandomSurvivalForest:
             f_idxs = np.random.RandomState(seed=self.random_states[i]).permutation(x.shape[1])[:n_features]
 
         tree = SurvivalTree(x=x.iloc[self.bootstrap_idxs[i], :], y=y.iloc[self.bootstrap_idxs[i], :],
-                            f_idxs=f_idxs, n_features=n_features, timeline=self.timeline,
-                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf,
-                            random_state=self.random_states[i])
+                            f_idxs=f_idxs, n_features=n_features, unique_deaths=self.unique_deaths,
+                            min_leaf=self.min_leaf, random_state=self.random_states[i])
 
         return tree
 
@@ -115,16 +112,22 @@ class RandomSurvivalForest:
     def predict(self, xs):
         """
         Predict survival for xs.
-        :param xs:The input samples
+        :param xs: The input samples
         :return: List of the predicted cumulative hazard functions.
         """
-        preds = []
-        for x in xs.values:
-            chfs = []
-            for q in range(len(self.trees)):
-                chfs.append(self.trees[q].predict(x))
-            preds.append(pd.concat(chfs).groupby(level=0).mean())
-        return preds
+        ensemble_chfs = []
+        for sample_idx in range(xs.shape[0]):
+            denominator = 0
+            numerator = 0
+            for b in range(len(self.trees)):
+                sample = xs.iloc[sample_idx].to_list()
+                chf = self.trees[b].predict(sample)
+                denominator = denominator + 1
+                numerator = numerator + 1 * chf
+
+            ensemble_chf = numerator / denominator
+            ensemble_chfs.append(ensemble_chf)
+        return ensemble_chfs
 
     def draw_bootstrap_samples(self, data):
         """

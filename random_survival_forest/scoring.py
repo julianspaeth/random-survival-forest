@@ -9,7 +9,7 @@ def concordance_index(y_time, y_pred, y_event):
     :param y_event: Actual Survival Events.
     :return: c-index.
     """
-    oob_predicted_outcome = [round(x.sum(), 1) for x in y_pred]
+    oob_predicted_outcome = [x.sum() for x in y_pred]
     possible_pairs = list(combinations(range(len(y_pred)), 2))
     concordance = 0
     permissible = 0
