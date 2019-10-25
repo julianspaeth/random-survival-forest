@@ -14,13 +14,14 @@ class Node:
     chf_terminal = None
     terminal = False
 
-    def __init__(self, x, y, tree, f_idxs, n_features, unique_deaths=3, min_leaf=3, random_state=None):
+    def __init__(self, x, y, tree, f_idxs, n_features, timeline, unique_deaths=3, min_leaf=3, random_state=None):
         """
         A Node of the Survival Tree.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
         :param y: The target values as a Dataframe with the survival time in the first column and the event.
         :param tree: The corresponding Survival Tree
         :param f_idxs: The indices of the features to use.
+        :param timeline: The timeline used for the prediction.
         :param n_features: The number of features to use.
         :param unique_deaths: The minimum number of unique deaths required to be at a leaf node.
         :param min_leaf: The minimum number of samples required to be at a leaf node. A split point at any depth will
@@ -30,6 +31,7 @@ class Node:
         self.y = y
         self.tree = tree
         self.f_idxs = f_idxs
+        self.timeline = timeline
         self.n_features = n_features
         self.unique_deaths = unique_deaths
         self.random_state = random_state
@@ -72,7 +74,7 @@ class Node:
         self.chf = NelsonAalenFitter()
         t = self.y.iloc[:, 0]
         e = self.y.iloc[:, 1]
-        self.chf.fit(t, event_observed=e)
+        self.chf.fit(t, event_observed=e, timeline=self.timeline)
 
         return self
 
