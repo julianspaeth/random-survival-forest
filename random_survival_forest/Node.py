@@ -57,11 +57,11 @@ class Node:
 
         lf_idxs, rf_idxs = select_new_feature_indices(self.random_state, self.x, self.n_features)
 
-        self.lhs = Node(self.x.iloc[lhs_idxs_opt, :], self.y.iloc[lhs_idxs_opt, :], self.tree,
-                        lf_idxs, self.n_features, min_leaf=self.min_leaf, random_state=self.random_state)
+        self.lhs = Node(self.x.iloc[lhs_idxs_opt, :], self.y.iloc[lhs_idxs_opt, :], self.tree, lf_idxs,
+                        self.n_features, timeline=self.timeline, min_leaf=self.min_leaf, random_state=self.random_state)
 
-        self.rhs = Node(self.x.iloc[rhs_idxs_opt, :], self.y.iloc[rhs_idxs_opt, :], self.tree,
-                        rf_idxs, self.n_features, min_leaf=self.min_leaf, random_state=self.random_state)
+        self.rhs = Node(self.x.iloc[rhs_idxs_opt, :], self.y.iloc[rhs_idxs_opt, :], self.tree, rf_idxs,
+                        self.n_features, timeline=self.timeline, min_leaf=self.min_leaf, random_state=self.random_state)
 
         return self
 
