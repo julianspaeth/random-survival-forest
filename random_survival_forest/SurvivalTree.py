@@ -5,8 +5,6 @@ from .tree_helper import select_new_feature_indices
 
 class SurvivalTree:
 
-    prediction_possible = None
-
     def __init__(self, x, y, f_idxs, n_features, timeline, unique_deaths=3, min_leaf=3, random_state=None):
         """
         A Survival Tree to predict survival.
@@ -34,6 +32,7 @@ class SurvivalTree:
         self.lhs = None
         self.rhs = None
         self.chf = None
+        self.prediction_possible = None
         self.grow_tree()
 
     def grow_tree(self):

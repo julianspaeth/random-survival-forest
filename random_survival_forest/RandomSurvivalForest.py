@@ -7,12 +7,6 @@ import multiprocessing
 
 
 class RandomSurvivalForest:
-    bootstrap_idxs = None
-    bootstraps = []
-    oob_idxs = None
-    oob_score = None
-    trees = []
-    random_states = []
 
     def __init__(self, timeline, n_estimators=100, min_leaf=3, unique_deaths=3, n_jobs=None, random_state=None):
         """
@@ -31,6 +25,12 @@ class RandomSurvivalForest:
         self.unique_deaths = unique_deaths
         self.n_jobs = n_jobs
         self.random_state = random_state
+        self.bootstrap_idxs = None
+        self.bootstraps = []
+        self.oob_idxs = None
+        self.oob_score = None
+        self.trees = []
+        self.random_states = []
 
     def fit(self, x, y):
         """

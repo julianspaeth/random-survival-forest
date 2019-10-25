@@ -5,15 +5,6 @@ from .tree_helper import select_new_feature_indices
 
 class Node:
 
-    score = 0
-    split_val = None
-    split_var = None
-    lhs = None
-    rhs = None
-    chf = None
-    chf_terminal = None
-    terminal = False
-
     def __init__(self, x, y, tree, f_idxs, n_features, timeline, unique_deaths=3, min_leaf=3, random_state=None):
         """
         A Node of the Survival Tree.
@@ -36,6 +27,14 @@ class Node:
         self.unique_deaths = unique_deaths
         self.random_state = random_state
         self.min_leaf = min_leaf
+        self.score = 0
+        self.split_val = None
+        self.split_var = None
+        self.lhs = None
+        self.rhs = None
+        self.chf = None
+        self.chf_terminal = None
+        self.terminal = False
         self.grow_tree()
 
     def grow_tree(self):
