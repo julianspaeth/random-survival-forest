@@ -14,10 +14,10 @@ def concordance_index(y_time, y_pred, y_event):
     concordance = 0
     permissible = 0
     for pair in possible_pairs:
-        t1 = y_time.iloc[pair[0]]
-        t2 = y_time.iloc[pair[1]]
-        e1 = y_event.iloc[pair[0]]
-        e2 = y_event.iloc[pair[1]]
+        t1 = y_time.iat[pair[0]]
+        t2 = y_time.iat[pair[1]]
+        e1 = y_event.iat[pair[0]]
+        e2 = y_event.iat[pair[1]]
         predicted_outcome_1 = oob_predicted_outcome[pair[0]]
         predicted_outcome_2 = oob_predicted_outcome[pair[1]]
 

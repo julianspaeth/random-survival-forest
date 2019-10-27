@@ -32,7 +32,9 @@ class RandomSurvivalForest:
         self.trees = []
         self.random_states = []
 
+
     def fit(self, x, y):
+
         """
         Build a forest of trees from the training set (X, y).
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
@@ -40,7 +42,6 @@ class RandomSurvivalForest:
         in the second with the shape [n_samples, 2]
         :return: self: object
         """
-
         if self.n_jobs == -1:
             self.n_jobs = multiprocessing.cpu_count()
         elif self.n_jobs is None:
@@ -48,10 +49,11 @@ class RandomSurvivalForest:
         self.random_states = np.random.RandomState(seed=self.random_state).randint(0, 2**32-1, self.n_estimators)
         self.bootstrap_idxs = self.draw_bootstrap_samples(x)
 
-        trees = Parallel(n_jobs=self.n_jobs)(delayed(self.create_tree)(x, y, i) for i in range(self.n_estimators))
+        trees = Parallel(n_jobs=self.n_jobs, backend="multiprocessing")(delayed(self.create_tree)(x, y, i)
+                                                                        for i in range(self.n_estimators))
 
         for i in range(len(trees)):
-            if trees[i].prediction_possible is True:
+            if trees[i].prediction_possible:
                 self.trees.append(trees[i])
                 self.bootstraps.append(self.bootstrap_idxs[i])
 
@@ -79,27 +81,14 @@ class RandomSurvivalForest:
 
         return tree
 
-    def compute_oob_ensembles(self, x):
+    def compute_oob_ensembles(self, xs):
         """
         Compute OOB ensembles.
         :return: List of oob ensemble for each sample.
         """
-        oob_ensemble_chfs = []
-        for sample_idx in range(x.shape[0]):
-            denominator = 0
-            numerator = 0
-            for b in range(len(self.trees)):
-                if sample_idx not in self.bootstraps[b]:
-                    sample = x.iloc[sample_idx].to_list()
-                    chf = self.trees[b].predict(sample)
-                    denominator = denominator + 1
-                    numerator = numerator + 1 * chf
-
-            if denominator == 0:
-                continue
-            else:
-                ensemble_chf = numerator/denominator
-                oob_ensemble_chfs.append(ensemble_chf)
+        results = [compute_oob_ensemble_chf(sample_idx=sample_idx, xs=xs, trees=self.trees,
+                                            bootstraps=self.bootstraps) for sample_idx in range(xs.shape[0])]
+        oob_ensemble_chfs = [i for i in results if not i.empty]
         return oob_ensemble_chfs
 
     def compute_oob_score(self, x, y):
@@ -117,18 +106,8 @@ class RandomSurvivalForest:
         :param xs: The input samples
         :return: List of the predicted cumulative hazard functions.
         """
-        ensemble_chfs = []
-        for sample_idx in range(xs.shape[0]):
-            denominator = 0
-            numerator = 0
-            for b in range(len(self.trees)):
-                sample = xs.iloc[sample_idx].to_list()
-                chf = self.trees[b].predict(sample)
-                denominator = denominator + 1
-                numerator = numerator + 1 * chf
-
-            ensemble_chf = numerator / denominator
-            ensemble_chfs.append(ensemble_chf)
+        ensemble_chfs = [compute_ensemble_chf(sample_idx=sample_idx, xs=xs, trees=self.trees)
+                         for sample_idx in range(xs.shape[0])]
         return ensemble_chfs
 
     def draw_bootstrap_samples(self, data):
@@ -149,3 +128,31 @@ class RandomSurvivalForest:
             bootstrap_idxs.append(bootstrap_idx)
 
         return bootstrap_idxs
+
+
+def compute_ensemble_chf(sample_idx, xs, trees):
+    denominator = 0
+    numerator = 0
+    for b in range(len(trees)):
+        sample = xs.iloc[sample_idx].to_list()
+        chf = trees[b].predict(sample)
+        denominator = denominator + 1
+        numerator = numerator + 1 * chf
+    ensemble_chf = numerator / denominator
+    return ensemble_chf
+
+
+def compute_oob_ensemble_chf(sample_idx, xs, trees, bootstraps):
+    denominator = 0
+    numerator = 0
+    for b in range(len(trees)):
+        if sample_idx not in bootstraps[b]:
+            sample = xs.iloc[sample_idx].to_list()
+            chf = trees[b].predict(sample)
+            denominator = denominator + 1
+            numerator = numerator + 1 * chf
+    if denominator != 0:
+        oob_ensemble_chf = numerator / denominator
+    else:
+        oob_ensemble_chf = pd.Series()
+    return oob_ensemble_chf
