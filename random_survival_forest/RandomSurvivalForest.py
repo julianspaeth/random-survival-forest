@@ -8,7 +8,8 @@ import multiprocessing
 
 class RandomSurvivalForest:
 
-    def __init__(self, timeline, n_estimators=100, min_leaf=3, unique_deaths=3, n_jobs=None, random_state=None):
+    def __init__(self, timeline, n_estimators=100, min_leaf=3, unique_deaths=3,
+                 n_jobs=None, parallelization_backend="multiprocessing", random_state=None):
         """
         A Random Survival Forest is a prediction model especially designed for survival analysis.
         :param timeline: The timeline used for the prediction. e.g. range(0, 10, 1)
@@ -24,6 +25,7 @@ class RandomSurvivalForest:
         self.min_leaf = min_leaf
         self.unique_deaths = unique_deaths
         self.n_jobs = n_jobs
+        self.parallelization_backend=parallelization_backend
         self.random_state = random_state
         self.bootstrap_idxs = None
         self.bootstraps = []
@@ -34,7 +36,6 @@ class RandomSurvivalForest:
 
 
     def fit(self, x, y):
-
         """
         Build a forest of trees from the training set (X, y).
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
@@ -49,8 +50,8 @@ class RandomSurvivalForest:
         self.random_states = np.random.RandomState(seed=self.random_state).randint(0, 2**32-1, self.n_estimators)
         self.bootstrap_idxs = self.draw_bootstrap_samples(x)
 
-        trees = Parallel(n_jobs=self.n_jobs, backend="multiprocessing")(delayed(self.create_tree)(x, y, i)
-                                                                        for i in range(self.n_estimators))
+        trees = Parallel(n_jobs=self.n_jobs, backend=self.parallelization_backend)(delayed(self.create_tree)(x, y, i)
+                                                                                   for i in range(self.n_estimators))
 
         for i in range(len(trees)):
             if trees[i].prediction_possible:
