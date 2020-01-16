@@ -37,7 +37,7 @@ $ pip install random-survival-forest
 
 If you are having issues or feedback, please let me know.
 
-julian.spaeth@student.uni-tuebinden.de
+julian.spaeth@wzw.tum.de
 
 ## License
 MIT
