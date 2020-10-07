@@ -5,14 +5,13 @@ from .tree_helper import select_new_feature_indices
 
 class Node:
 
-    def __init__(self, x, y, tree, f_idxs, n_features, timeline, unique_deaths=3, min_leaf=3, random_state=None):
+    def __init__(self, x, y, tree, f_idxs, n_features, unique_deaths=3, min_leaf=3, random_state=None, timeline=None):
         """
         A Node of the Survival Tree.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
         :param y: The target values as a Dataframe with the survival time in the first column and the event.
         :param tree: The corresponding Survival Tree
         :param f_idxs: The indices of the features to use.
-        :param timeline: The timeline used for the prediction.
         :param n_features: The number of features to use.
         :param unique_deaths: The minimum number of unique deaths required to be at a leaf node.
         :param min_leaf: The minimum number of samples required to be at a leaf node. A split point at any depth will
@@ -22,7 +21,6 @@ class Node:
         self.y = y
         self.tree = tree
         self.f_idxs = f_idxs
-        self.timeline = timeline
         self.n_features = n_features
         self.unique_deaths = unique_deaths
         self.random_state = random_state
@@ -35,6 +33,7 @@ class Node:
         self.chf = None
         self.chf_terminal = None
         self.terminal = False
+        self.timeline = timeline
         self.grow_tree()
 
     def grow_tree(self):
@@ -57,10 +56,10 @@ class Node:
         lf_idxs, rf_idxs = select_new_feature_indices(self.random_state, self.x, self.n_features)
 
         self.lhs = Node(self.x.iloc[lhs_idxs_opt, :], self.y.iloc[lhs_idxs_opt, :], self.tree, lf_idxs,
-                        self.n_features, timeline=self.timeline, min_leaf=self.min_leaf, random_state=self.random_state)
+                        self.n_features, min_leaf=self.min_leaf, random_state=self.random_state, timeline=self.timeline)
 
         self.rhs = Node(self.x.iloc[rhs_idxs_opt, :], self.y.iloc[rhs_idxs_opt, :], self.tree, rf_idxs,
-                        self.n_features, timeline=self.timeline, min_leaf=self.min_leaf, random_state=self.random_state)
+                        self.n_features, min_leaf=self.min_leaf, random_state=self.random_state, timeline=self.timeline)
 
         return self
 
@@ -74,7 +73,6 @@ class Node:
         t = self.y.iloc[:, 0]
         e = self.y.iloc[:, 1]
         self.chf.fit(t, event_observed=e, timeline=self.timeline)
-
         return self
 
     def predict(self, x):
@@ -86,7 +84,7 @@ class Node:
         if self.terminal:
             self.tree.chf = self.chf.cumulative_hazard_
             self.tree.chf = self.tree.chf.iloc[:, 0]
-            return self.tree.chf
+            return self.tree.chf.dropna()
 
         else:
             if x[self.split_var] <= self.split_val:

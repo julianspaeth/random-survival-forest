@@ -9,7 +9,7 @@ def concordance_index(y_time, y_pred, y_event):
     :param y_event: Actual Survival Events.
     :return: c-index.
     """
-    oob_predicted_outcome = [x.sum() for x in y_pred]
+    predicted_outcome = [x.sum() for x in y_pred]
     possible_pairs = list(combinations(range(len(y_pred)), 2))
     concordance = 0
     permissible = 0
@@ -18,8 +18,8 @@ def concordance_index(y_time, y_pred, y_event):
         t2 = y_time.iat[pair[1]]
         e1 = y_event.iat[pair[0]]
         e2 = y_event.iat[pair[1]]
-        predicted_outcome_1 = oob_predicted_outcome[pair[0]]
-        predicted_outcome_2 = oob_predicted_outcome[pair[1]]
+        predicted_outcome_1 = predicted_outcome[pair[0]]
+        predicted_outcome_2 = predicted_outcome[pair[1]]
 
         shorter_survival_time_censored = (t1 < t2 and e1 == 0) or (t2 < t1 and e2 == 0)
         t1_equals_t2_and_no_death = (t1 == t2 and (e1 == 0 and e2 == 0))

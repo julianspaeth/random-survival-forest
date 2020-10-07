@@ -1,18 +1,19 @@
+import multiprocessing
+
 import numpy as np
 import pandas as pd
+from joblib import Parallel, delayed
+
 from .SurvivalTree import SurvivalTree
 from .scoring import concordance_index
-from joblib import Parallel, delayed
-import multiprocessing
 
 
 class RandomSurvivalForest:
 
-    def __init__(self, timeline, n_estimators=100, min_leaf=3, unique_deaths=3,
+    def __init__(self, n_estimators=100, min_leaf=3, unique_deaths=3,
                  n_jobs=None, parallelization_backend="multiprocessing", random_state=None):
         """
         A Random Survival Forest is a prediction model especially designed for survival analysis.
-        :param timeline: The timeline used for the prediction. e.g. range(0, 10, 1)
         :param n_estimators: The numbers of trees in the forest.
         :param min_leaf: The minimum number of samples required to be at a leaf node. A split point at any depth will
         only be considered if it leaves at least min_leaf training samples in each of the left and right branches.
@@ -20,12 +21,11 @@ class RandomSurvivalForest:
         :param random_state: The random state to create reproducible results.
         :param n_jobs: The number of jobs to run in parallel for fit. None means 1.
         """
-        self.timeline = timeline
         self.n_estimators = n_estimators
         self.min_leaf = min_leaf
         self.unique_deaths = unique_deaths
         self.n_jobs = n_jobs
-        self.parallelization_backend=parallelization_backend
+        self.parallelization_backend = parallelization_backend
         self.random_state = random_state
         self.bootstrap_idxs = None
         self.bootstraps = []
@@ -33,7 +33,7 @@ class RandomSurvivalForest:
         self.oob_score = None
         self.trees = []
         self.random_states = []
-
+        self.timeline = None
 
     def fit(self, x, y):
         """
@@ -43,11 +43,12 @@ class RandomSurvivalForest:
         in the second with the shape [n_samples, 2]
         :return: self: object
         """
+        self.timeline = range(y.iloc[:, 0].min(), y.iloc[:, 0].max(), 1)
         if self.n_jobs == -1:
             self.n_jobs = multiprocessing.cpu_count()
         elif self.n_jobs is None:
             self.n_jobs = 1
-        self.random_states = np.random.RandomState(seed=self.random_state).randint(0, 2**32-1, self.n_estimators)
+        self.random_states = np.random.RandomState(seed=self.random_state).randint(0, 2 ** 32 - 1, self.n_estimators)
         self.bootstrap_idxs = self.draw_bootstrap_samples(x)
 
         trees = Parallel(n_jobs=self.n_jobs, backend=self.parallelization_backend)(delayed(self.create_tree)(x, y, i)
@@ -77,8 +78,9 @@ class RandomSurvivalForest:
             f_idxs = np.random.RandomState(seed=self.random_states[i]).permutation(x.shape[1])[:n_features]
 
         tree = SurvivalTree(x=x.iloc[self.bootstrap_idxs[i], :], y=y.iloc[self.bootstrap_idxs[i], :],
-                            f_idxs=f_idxs, n_features=n_features, timeline=self.timeline,
-                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf, random_state=self.random_states[i])
+                            f_idxs=f_idxs, n_features=n_features,
+                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf,
+                            random_state=self.random_states[i], timeline=self.timeline)
 
         return tree
 
