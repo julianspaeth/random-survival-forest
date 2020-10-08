@@ -1,7 +1,7 @@
 from lifelines import NelsonAalenFitter
 from .splitting import find_split
 from .tree_helper import select_new_feature_indices
-
+import time
 
 class Node:
 
@@ -41,7 +41,7 @@ class Node:
         Grow tree by calculating the Nodes recursively.
         :return: self
         """
-        unique_deaths = self.y.iloc[:, 1].reset_index().drop_duplicates().sum()[1]
+        unique_deaths = self.y.iloc[:, 0].reset_index().drop_duplicates().sum()[1]
 
         if unique_deaths <= self.unique_deaths:
             self.compute_terminal_node()
@@ -70,8 +70,8 @@ class Node:
         """
         self.terminal = True
         self.chf = NelsonAalenFitter()
-        t = self.y.iloc[:, 0]
-        e = self.y.iloc[:, 1]
+        t = self.y.iloc[:, 1]
+        e = self.y.iloc[:, 0]
         self.chf.fit(t, event_observed=e, timeline=self.timeline)
         return self
 

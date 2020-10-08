@@ -6,12 +6,13 @@ from joblib import Parallel, delayed
 
 from .SurvivalTree import SurvivalTree
 from .scoring import concordance_index
+import time
 
 
 class RandomSurvivalForest:
 
     def __init__(self, n_estimators=100, min_leaf=3, unique_deaths=3,
-                 n_jobs=None, parallelization_backend="multiprocessing", random_state=None):
+                 n_jobs=None, parallelization_backend="multiprocessing", random_state=None, oob_score=False):
         """
         A Random Survival Forest is a prediction model especially designed for survival analysis.
         :param n_estimators: The numbers of trees in the forest.
@@ -30,7 +31,7 @@ class RandomSurvivalForest:
         self.bootstrap_idxs = None
         self.bootstraps = []
         self.oob_idxs = None
-        self.oob_score = None
+        self.oob_score = oob_score
         self.trees = []
         self.random_states = []
         self.timeline = None
@@ -43,7 +44,7 @@ class RandomSurvivalForest:
         in the second with the shape [n_samples, 2]
         :return: self: object
         """
-        self.timeline = range(y.iloc[:, 0].min(), y.iloc[:, 0].max(), 1)
+        self.timeline = range(y.iloc[:, 1].min(), y.iloc[:, 1].max(), 1)
         if self.n_jobs == -1:
             self.n_jobs = multiprocessing.cpu_count()
         elif self.n_jobs is None:
@@ -59,7 +60,8 @@ class RandomSurvivalForest:
                 self.trees.append(trees[i])
                 self.bootstraps.append(self.bootstrap_idxs[i])
 
-        self.oob_score = self.compute_oob_score(x, y)
+        if self.oob_score:
+            self.oob_score = self.compute_oob_score(x, y)
 
         return self
 
@@ -100,7 +102,7 @@ class RandomSurvivalForest:
         :return: c-index of oob samples
         """
         oob_ensembles = self.compute_oob_ensembles(x)
-        c = concordance_index(y_time=y.iloc[:, 0], y_pred=oob_ensembles, y_event=y.iloc[:, 1])
+        c = concordance_index(y_time=y.iloc[:, 1], y_pred=oob_ensembles, y_event=y.iloc[:, 0])
         return c
 
     def predict(self, xs):

@@ -1,7 +1,7 @@
 from .Node import Node
 from .splitting import find_split
 from .tree_helper import select_new_feature_indices
-
+import time
 
 class SurvivalTree:
 
@@ -39,7 +39,7 @@ class SurvivalTree:
         Grow the survival tree recursively as nodes.
         :return: self
         """
-        unique_deaths = self.y.iloc[:, 1].reset_index().drop_duplicates().sum()[1]
+        unique_deaths = self.y.iloc[:, 0].reset_index().drop_duplicates().sum()[1]
 
         self.score, self.split_val, self.split_var, lhs_idxs_opt, rhs_idxs_opt = find_split(self)
 
