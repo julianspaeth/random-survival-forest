@@ -1,5 +1,3 @@
-# from lifelines.statistics import logrank_test
-import time
 from fastlogranktest import logrank_test
 import numpy as np
 

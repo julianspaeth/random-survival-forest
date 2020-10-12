@@ -1,7 +1,6 @@
 from lifelines import NelsonAalenFitter
 from .splitting import find_split
 from .tree_helper import select_new_feature_indices
-import time
 
 class Node:
 

@@ -6,7 +6,6 @@ from joblib import Parallel, delayed
 
 from .SurvivalTree import SurvivalTree
 from .scoring import concordance_index
-import time
 
 
 class RandomSurvivalForest:
