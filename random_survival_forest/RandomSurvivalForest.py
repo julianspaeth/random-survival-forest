@@ -12,14 +12,13 @@ import time
 class RandomSurvivalForest:
 
     def __init__(self, n_estimators=100, min_leaf=3, unique_deaths=3,
-                 n_jobs=None, parallelization_backend="multiprocessing", random_state=None, oob_score=False):
+                 n_jobs=None, parallelization_backend="multiprocessing", oob_score=False):
         """
         A Random Survival Forest is a prediction model especially designed for survival analysis.
         :param n_estimators: The numbers of trees in the forest.
         :param min_leaf: The minimum number of samples required to be at a leaf node. A split point at any depth will
         only be considered if it leaves at least min_leaf training samples in each of the left and right branches.
         :param unique_deaths: The minimum number of unique deaths required to be at a leaf node.
-        :param random_state: The random state to create reproducible results.
         :param n_jobs: The number of jobs to run in parallel for fit. None means 1.
         """
         self.n_estimators = n_estimators
@@ -27,13 +26,11 @@ class RandomSurvivalForest:
         self.unique_deaths = unique_deaths
         self.n_jobs = n_jobs
         self.parallelization_backend = parallelization_backend
-        self.random_state = random_state
         self.bootstrap_idxs = None
         self.bootstraps = []
         self.oob_idxs = None
         self.oob_score = oob_score
         self.trees = []
-        self.random_states = []
         self.timeline = None
 
     def fit(self, x, y):
@@ -49,7 +46,6 @@ class RandomSurvivalForest:
             self.n_jobs = multiprocessing.cpu_count()
         elif self.n_jobs is None:
             self.n_jobs = 1
-        self.random_states = np.random.RandomState(seed=self.random_state).randint(0, 2 ** 32 - 1, self.n_estimators)
         self.bootstrap_idxs = self.draw_bootstrap_samples(x)
 
         trees = Parallel(n_jobs=self.n_jobs, backend=self.parallelization_backend)(delayed(self.create_tree)(x, y, i)
@@ -74,15 +70,12 @@ class RandomSurvivalForest:
         :return: SurvivalTree
         """
         n_features = int(round(np.sqrt(x.shape[1]), 0))
-        if self.random_state is None:
-            f_idxs = np.random.permutation(x.shape[1])[:n_features]
-        else:
-            f_idxs = np.random.RandomState(seed=self.random_states[i]).permutation(x.shape[1])[:n_features]
+        f_idxs = np.random.permutation(x.shape[1])[:n_features]
 
         tree = SurvivalTree(x=x.iloc[self.bootstrap_idxs[i], :], y=y.iloc[self.bootstrap_idxs[i], :],
                             f_idxs=f_idxs, n_features=n_features,
                             unique_deaths=self.unique_deaths, min_leaf=self.min_leaf,
-                            random_state=self.random_states[i], timeline=self.timeline)
+                            timeline=self.timeline)
 
         return tree
 
@@ -125,11 +118,7 @@ class RandomSurvivalForest:
         for i in range(self.n_estimators):
             no_samples = len(data)
             data_rows = range(no_samples)
-            if self.random_state is None:
-                bootstrap_idx = np.random.choice(data_rows, no_samples)
-            else:
-                np.random.seed(self.random_states[i])
-                bootstrap_idx = np.random.choice(data_rows, no_samples)
+            bootstrap_idx = np.random.choice(data_rows, no_samples)
             bootstrap_idxs.append(bootstrap_idx)
 
         return bootstrap_idxs
