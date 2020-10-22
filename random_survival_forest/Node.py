@@ -2,10 +2,9 @@ from lifelines import NelsonAalenFitter
 from .splitting import find_split
 from .tree_helper import select_new_feature_indices
 
-
 class Node:
 
-    def __init__(self, x, y, tree, f_idxs, n_features, unique_deaths=3, min_leaf=3, random_state=None, timeline=None):
+    def __init__(self, x, y, tree, f_idxs, n_features, unique_deaths=3, min_leaf=3, timeline=None):
         """
         A Node of the Survival Tree.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
@@ -23,7 +22,6 @@ class Node:
         self.f_idxs = f_idxs
         self.n_features = n_features
         self.unique_deaths = unique_deaths
-        self.random_state = random_state
         self.min_leaf = min_leaf
         self.score = 0
         self.split_val = None
@@ -41,7 +39,7 @@ class Node:
         Grow tree by calculating the Nodes recursively.
         :return: self
         """
-        unique_deaths = self.y.iloc[:, 1].reset_index().drop_duplicates().sum()[1]
+        unique_deaths = self.y.iloc[:, 0].reset_index().drop_duplicates().sum()[1]
 
         if unique_deaths <= self.unique_deaths:
             self.compute_terminal_node()
@@ -53,13 +51,13 @@ class Node:
             self.compute_terminal_node()
             return self
 
-        lf_idxs, rf_idxs = select_new_feature_indices(self.random_state, self.x, self.n_features)
+        lf_idxs, rf_idxs = select_new_feature_indices(self.x, self.n_features)
 
         self.lhs = Node(self.x.iloc[lhs_idxs_opt, :], self.y.iloc[lhs_idxs_opt, :], self.tree, lf_idxs,
-                        self.n_features, min_leaf=self.min_leaf, random_state=self.random_state, timeline=self.timeline)
+                        self.n_features, min_leaf=self.min_leaf, timeline=self.timeline)
 
         self.rhs = Node(self.x.iloc[rhs_idxs_opt, :], self.y.iloc[rhs_idxs_opt, :], self.tree, rf_idxs,
-                        self.n_features, min_leaf=self.min_leaf, random_state=self.random_state, timeline=self.timeline)
+                        self.n_features, min_leaf=self.min_leaf, timeline=self.timeline)
 
         return self
 
@@ -70,8 +68,8 @@ class Node:
         """
         self.terminal = True
         self.chf = NelsonAalenFitter()
-        t = self.y.iloc[:, 0]
-        e = self.y.iloc[:, 1]
+        t = self.y.iloc[:, 1]
+        e = self.y.iloc[:, 0]
         self.chf.fit(t, event_observed=e, timeline=self.timeline)
         return self
 

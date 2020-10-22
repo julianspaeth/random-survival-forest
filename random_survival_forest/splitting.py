@@ -1,5 +1,5 @@
-from lifelines.statistics import logrank_test
-
+from fastlogranktest import logrank_test
+import numpy as np
 
 def find_split(node):
     """
@@ -14,6 +14,7 @@ def find_split(node):
     split_var_opt = None
     for i in node.f_idxs:
         score, split_val, lhs_idxs, rhs_idxs = find_best_split_for_variable(node, i)
+
         if score > score_opt:
             score_opt = score
             split_val_opt = split_val
@@ -58,14 +59,11 @@ def logrank_statistics(x, y, feature, min_leaf):
         feature2 = list(x_feature[x_feature > split_val].index)
         if len(feature1) < min_leaf or len(feature2) < min_leaf:
             continue
-        durations_a = y.iloc[feature1, 0]
-        event_observed_a = y.iloc[feature1, 1]
-        durations_b = y.iloc[feature2, 0]
-        event_observed_b = y.iloc[feature2, 1]
-        results = logrank_test(durations_A=durations_a, durations_B=durations_b,
-                               event_observed_A=event_observed_a, event_observed_B=event_observed_b)
-        score = results.test_statistic
-
+        durations_a = np.array(y.iloc[feature1, 1])
+        event_observed_a = np.array(y.iloc[feature1, 0])
+        durations_b = np.array(y.iloc[feature2, 1])
+        event_observed_b = np.array(y.iloc[feature2, 0])
+        score = logrank_test(durations_a, durations_b, event_observed_a, event_observed_b)
         if score > score_opt:
             score_opt = round(score, 3)
             split_val_opt = round(split_val, 3)

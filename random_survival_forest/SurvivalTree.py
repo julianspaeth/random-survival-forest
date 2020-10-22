@@ -1,11 +1,11 @@
 from .Node import Node
 from .splitting import find_split
 from .tree_helper import select_new_feature_indices
-
+import time
 
 class SurvivalTree:
 
-    def __init__(self, x, y, f_idxs, n_features, unique_deaths=3, min_leaf=3, random_state=None, timeline=None):
+    def __init__(self, x, y, f_idxs, n_features, unique_deaths=3, min_leaf=3, timeline=None):
         """
         A Survival Tree to predict survival.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
@@ -22,7 +22,6 @@ class SurvivalTree:
         self.n_features = n_features
         self.min_leaf = min_leaf
         self.unique_deaths = unique_deaths
-        self.random_state = random_state
         self.score = 0
         self.index = 0
         self.split_val = None
@@ -39,22 +38,22 @@ class SurvivalTree:
         Grow the survival tree recursively as nodes.
         :return: self
         """
-        unique_deaths = self.y.iloc[:, 1].reset_index().drop_duplicates().sum()[1]
+        unique_deaths = self.y.iloc[:, 0].reset_index().drop_duplicates().sum()[1]
 
         self.score, self.split_val, self.split_var, lhs_idxs_opt, rhs_idxs_opt = find_split(self)
 
         if self.split_var is not None and unique_deaths > self.unique_deaths:
             self.prediction_possible = True
-            lf_idxs, rf_idxs = select_new_feature_indices(self.random_state, self.x, self.n_features)
+            lf_idxs, rf_idxs = select_new_feature_indices(self.x, self.n_features)
 
             self.lhs = Node(x=self.x.iloc[lhs_idxs_opt, :], y=self.y.iloc[lhs_idxs_opt, :],
                             tree=self, f_idxs=lf_idxs, n_features=self.n_features,
-                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf, random_state=self.random_state,
+                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf,
                             timeline=self.timeline)
 
             self.rhs = Node(x=self.x.iloc[rhs_idxs_opt, :], y=self.y.iloc[rhs_idxs_opt, :],
                             tree=self, f_idxs=rf_idxs, n_features=self.n_features,
-                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf, random_state=self.random_state,
+                            unique_deaths=self.unique_deaths, min_leaf=self.min_leaf,
                             timeline=self.timeline)
 
             return self
