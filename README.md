@@ -46,6 +46,7 @@ If you are having issues or feedback, please let me know. I am happy to fix some
 julian.alexander.spaeth@uni-hamburg..de
 
 This package is completely open-source. If it helped you or you even use it comercially, I would be happy about a little support:
+
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/julianspaeth)
 
 ## License
