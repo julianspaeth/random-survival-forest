@@ -1,6 +1,5 @@
 # Random Survival Forest
 
-[![Chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/random-survival-forest/community)
 
 The Random Survival Forest package provides a python implementation of the survival prediction method originally published by Ishwaran et al. (2008).
 
@@ -40,11 +39,16 @@ $ pip install random-survival-forest
 >>> print("C-index", round(c_val, 3))
 ```
 
-## Support
+## Feedback
 
-If you are having issues or feedback, please let me know.
+If you are having issues or feedback, please let me know. I am happy to fix some bug or implement feature requests.
 
-julian.spaeth@wzw.tum.de
+julian.alexander.spaeth@uni-hamburg..de
+
+This package is completely open-source. If it helped you or you even use it comercially, I would be happy about a little support:
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/julianspaeth)
 
 ## License
 MIT
+
+
