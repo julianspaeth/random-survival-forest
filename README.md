@@ -1,5 +1,6 @@
 # Random Survival Forest
 
+[![DOI](https://zenodo.org/badge/201053930.svg)](https://zenodo.org/badge/latestdoi/201053930)
 
 The Random Survival Forest package provides a python implementation of the survival prediction method originally published by Ishwaran et al. (2008).
 
