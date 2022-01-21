@@ -4,3 +4,5 @@ joblib
 multiprocess
 lifelines
 scikit-learn
+fastlogranktest
+cython
