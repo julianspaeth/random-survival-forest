@@ -4,3 +4,4 @@ joblib
 multiprocess
 lifelines
 scikit-learn
+setuptools
