@@ -1,7 +1,9 @@
-from fastlogranktest import logrank_test
+from lifelines.statistics import logrank_test
+
 import numpy as np
 
-def find_split(node):
+
+def _find_split(node):
     """
     Find the best split for a Node.
     :param node: Node to find best split for.
@@ -13,7 +15,7 @@ def find_split(node):
     rhs_idxs_opt = None
     split_var_opt = None
     for i in node.f_idxs:
-        score, split_val, lhs_idxs, rhs_idxs = find_best_split_for_variable(node, i)
+        score, split_val, lhs_idxs, rhs_idxs = _find_best_split_for_variable(node, i)
 
         if score > score_opt:
             score_opt = score
@@ -25,7 +27,7 @@ def find_split(node):
     return score_opt, split_val_opt, split_var_opt, lhs_idxs_opt, rhs_idxs_opt
 
 
-def find_best_split_for_variable(node, var_idx):
+def _find_best_split_for_variable(node, var_idx):
     """
     Find best split for a variable of a Node. Best split for a variable is the split with the highest log rank
     statistics. The logrank_test function of the lifelines package is used here.
@@ -63,7 +65,7 @@ def logrank_statistics(x, y, feature, min_leaf):
         event_observed_a = np.array(y.iloc[feature1, 0])
         durations_b = np.array(y.iloc[feature2, 1])
         event_observed_b = np.array(y.iloc[feature2, 0])
-        score = logrank_test(durations_a, durations_b, event_observed_a, event_observed_b)
+        score = logrank_test(durations_a, durations_b, event_observed_a, event_observed_b).test_statistic
         if score > score_opt:
             score_opt = round(score, 3)
             split_val_opt = round(split_val, 3)
