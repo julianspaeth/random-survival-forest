@@ -1,3 +1,5 @@
+# flake8: noqa
+
 """
 A Random Survival Forest implementation inspired by Ishwaran et al.
 
