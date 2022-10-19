@@ -6,7 +6,7 @@ with open('README.md') as f:
 setup(
     name='random_survival_forest',
     packages=['random_survival_forest'],
-    version='0.1.2',
+    version='0.8.1',
     license="MIT License",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -24,12 +24,10 @@ setup(
         'multiprocess',
         'lifelines',
         'scikit-learn',
-        'Cython',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Topic :: Software Development :: Build Tools', 'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
