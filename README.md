@@ -30,7 +30,7 @@ from random_survival_forest.models import RandomSurvivalForest
 from random_survival_forest.scoring import concordance_index
 
 rossi = datasets.load_rossi()
-# Attention: duration column must be index 0, event column index 1 in y
+# Attention: duration column must be index 1, event column index 0 in y
 y = rossi.loc[:, ["arrest", "week"]]
 X = rossi.drop(["arrest", "week"], axis=1)
 X, X_test, y, y_test = train_test_split(X, y, test_size=0.33, random_state=10)
