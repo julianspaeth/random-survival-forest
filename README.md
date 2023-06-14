@@ -18,6 +18,10 @@ $ pip install random-survival-forest
 
 - Source Code: https://github.com/julianspaeth/random-survival-forest
 
+## Performance
+This implemention is not optimized for being highly performant. It is programmed in pure python. If you have large datasets (large sample size) or use a very high number of trees, I suggest using the scikit-survival package.
+
+
 ## Getting Started
 
 ```python
