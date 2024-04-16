@@ -54,7 +54,6 @@ class RandomSurvivalForest:
                 "For example: RandomSurivalForest(timeline=range(y.iloc[:, 1].min(), y.iloc[:, 1].max(), 0.1)")
 
         self.bootstrap_idxs = self._draw_bootstrap_samples(x)
-
         num_cores = multiprocessing.cpu_count()
 
         if self.n_jobs > num_cores or self.n_jobs == -1:
@@ -62,7 +61,9 @@ class RandomSurvivalForest:
         elif self.n_jobs is None:
             self.n_jobs = 1
 
-        trees = Parallel(n_jobs=self.n_jobs)(delayed(self._create_tree)(x, y, i) for i in range(self.n_estimators))
+        #trees = Parallel(n_jobs=self.n_jobs)(delayed(self._create_tree)(x, y, i) for i in range(self.n_estimators))
+
+        trees = [self._create_tree(x, y, i) for i in range(self.n_estimators)]
 
         for i in range(len(trees)):
             if trees[i].prediction_possible:
@@ -74,7 +75,7 @@ class RandomSurvivalForest:
 
         return self
 
-    def _create_tree(self, x, y, i: list):
+    def _create_tree(self, x, y, i):
         """
         Grows a survival tree for the bootstrap samples.
         :param y: label data frame y with survival time as the first column and event as second
@@ -199,7 +200,7 @@ class SurvivalTree:
         Grow the survival tree recursively as nodes.
         :return: self
         """
-        unique_deaths = self.y.iloc[:, 0].reset_index().drop_duplicates().sum()[1]
+        unique_deaths = self.y.iloc[:, 0].reset_index().drop_duplicates().sum().iloc[1]
 
         self.score, self.split_val, self.split_var, lhs_idxs_opt, rhs_idxs_opt = _find_split(self)
 
@@ -274,7 +275,7 @@ class Node:
         Grow tree by calculating the Nodes recursively.
         :return: self
         """
-        unique_deaths = self.y.iloc[:, 0].reset_index().drop_duplicates().sum()[1]
+        unique_deaths = self.y.iloc[:, 0].reset_index().drop_duplicates().sum().iloc[1]
 
         if unique_deaths <= self.unique_deaths:
             self.compute_terminal_node()

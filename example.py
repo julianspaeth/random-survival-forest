@@ -14,7 +14,7 @@ X, X_test, y, y_test = train_test_split(X, y, test_size=0.33, random_state=10)
 
 print("Start training...")
 start_time = time.time()
-rsf = RandomSurvivalForest(n_estimators=10, n_jobs=-1, random_state=10)
+rsf = RandomSurvivalForest(n_estimators=1000, n_jobs=-1, random_state=42)
 rsf = rsf.fit(X, y)
 print(f'--- {round(time.time() - start_time, 3)} seconds ---')
 y_pred = rsf.predict(X_test)
