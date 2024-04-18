@@ -6,7 +6,7 @@ with open('README.md') as f:
 setup(
     name='random_survival_forest',
     packages=['random_survival_forest'],
-    version='0.8.1',
+    version='0.8.2',
     license="MIT License",
     long_description=readme,
     long_description_content_type="text/markdown",
