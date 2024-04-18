@@ -1,5 +1,4 @@
-from lifelines.statistics import logrank_test
-
+from sksurv import compare, util
 import numpy as np
 
 
@@ -56,16 +55,26 @@ def logrank_statistics(x, y, feature, min_leaf):
     lhs_idxs = None
     rhs_idxs = None
 
-    for split_val in x_feature.sort_values(ascending=True, kind="quicksort").unique():
-        feature1 = list(x_feature[x_feature <= split_val].index)
-        feature2 = list(x_feature[x_feature > split_val].index)
+    unique_vals = np.sort(np.unique(x_feature))
+
+    for split_val in unique_vals:
+        feature1 = np.where(x_feature <= split_val)[0]
+        feature2 = np.where(x_feature > split_val)[0]
+
         if len(feature1) < min_leaf or len(feature2) < min_leaf:
             continue
-        durations_a = np.array(y.iloc[feature1, 1])
-        event_observed_a = np.array(y.iloc[feature1, 0])
-        durations_b = np.array(y.iloc[feature2, 1])
-        event_observed_b = np.array(y.iloc[feature2, 0])
-        score = logrank_test(durations_a, durations_b, event_observed_a, event_observed_b).test_statistic
+
+        y_tmp = y.iloc[np.concatenate((feature1, feature2)), :2]
+        y_tmp['group_indicator'] = np.nan
+        y_tmp.iloc[feature1, -1] = 0
+        y_tmp.iloc[feature2, -1] = 1
+
+        try:
+            score, p_value = compare.compare_survival(
+                util.Surv.from_dataframe("arrest", "week", y_tmp.drop(columns='group_indicator')),
+                y_tmp.loc[:, 'group_indicator'], return_stats=False)
+        except ValueError:
+            continue
         if score > score_opt:
             score_opt = round(score, 3)
             split_val_opt = round(split_val, 3)
