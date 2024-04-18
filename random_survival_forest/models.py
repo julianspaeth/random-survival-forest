@@ -61,9 +61,7 @@ class RandomSurvivalForest:
         elif self.n_jobs is None:
             self.n_jobs = 1
 
-        #trees = Parallel(n_jobs=self.n_jobs)(delayed(self._create_tree)(x, y, i) for i in range(self.n_estimators))
-
-        trees = [self._create_tree(x, y, i) for i in range(self.n_estimators)]
+        trees = Parallel(n_jobs=self.n_jobs)(delayed(self._create_tree)(x, y, i) for i in range(self.n_estimators))
 
         for i in range(len(trees)):
             if trees[i].prediction_possible:
