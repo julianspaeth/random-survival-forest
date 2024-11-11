@@ -1,8 +1,8 @@
 import multiprocessing
 
-from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
+from joblib import Parallel, delayed
 from lifelines import NelsonAalenFitter
 from sklearn.utils import check_random_state
 
@@ -48,7 +48,7 @@ class RandomSurvivalForest:
             if self.timeline is None:
                 self.timeline = y.iloc[:, 1].sort_values().unique()
         except Exception:
-            raise (
+            raise ValueError(
                 "Timeline seems to contain float values. Please provide a custom timeline in the RandomSurvivalForest "
                 "constructor. "
                 "For example: RandomSurivalForest(timeline=range(y.iloc[:, 1].min(), y.iloc[:, 1].max(), 0.1)")
