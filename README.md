@@ -21,7 +21,7 @@ pip install random-survival-forest
 
 ## Contribute
 
-- Source Code: https://github.com/julianspaeth/random-survival-forest
+- Source Code: <https://github.com/julianspaeth/random-survival-forest>
 
 ## Development
 
