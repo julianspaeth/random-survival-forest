@@ -1,4 +1,3 @@
-from sksurv import compare, util
 import numpy as np
 
 
@@ -42,43 +41,70 @@ def _find_best_split_for_variable(node, var_idx):
 
 def logrank_statistics(x, y, feature, min_leaf):
     """
-    Compute logrank_test of liflines package.
+    Compute the log-rank split statistic for every candidate split value of a feature in one vectorized pass,
+    and return the best one. Uses the martingale-residual identity for the log-rank numerator (each subject's
+    residual event_j - H(time_j), H being the pooled Nelson-Aalen cumulative hazard, is split-independent and
+    computed once) plus the standard hypergeometric log-rank variance, evaluated for all candidates via a single
+    numpy broadcast. Numerically equivalent to lifelines.statistics.logrank_test for a given split.
     :param x: Input samples
     :param y: Labels
     :param feature: Feature index
     :param min_leaf: Minimum number of leafs for each split.
     :return: best score, best split value, left indices, right indices
     """
-    x_feature = x.reset_index(drop=True).iloc[:, feature]
-    score_opt = 0
-    split_val_opt = None
-    lhs_idxs = None
-    rhs_idxs = None
+    x_feature = x.reset_index(drop=True).iloc[:, feature].to_numpy()
+    event = y.iloc[:, 0].to_numpy()
+    time = y.iloc[:, 1].to_numpy()
+    n = len(x_feature)
 
-    unique_vals = np.sort(np.unique(x_feature))
+    order_t = np.argsort(time, kind='mergesort')
+    t_sorted = time[order_t]
+    e_sorted = event[order_t]
 
-    for split_val in unique_vals:
-        feature1 = np.where(x_feature <= split_val)[0]
-        feature2 = np.where(x_feature > split_val)[0]
+    unique_times, first_idx = np.unique(t_sorted, return_index=True)
+    at_risk = n - first_idx
+    deaths = np.add.reduceat(e_sorted, first_idx)
 
-        if len(feature1) < min_leaf or len(feature2) < min_leaf:
-            continue
+    with np.errstate(divide='ignore', invalid='ignore'):
+        hazard_increment = np.where(at_risk > 0, deaths / at_risk, 0.0)
+    cum_hazard_at_unique = np.cumsum(hazard_increment)
 
-        y_tmp = y.iloc[np.concatenate((feature1, feature2)), :2]
-        y_tmp['group_indicator'] = np.nan
-        y_tmp.iloc[feature1, -1] = 0
-        y_tmp.iloc[feature2, -1] = 1
+    subject_time_rank = np.searchsorted(unique_times, time, side='right') - 1
+    residual = event - cum_hazard_at_unique[subject_time_rank]
 
-        try:
-            score, p_value = compare.compare_survival(
-                util.Surv.from_dataframe("arrest", "week", y_tmp.drop(columns='group_indicator')),
-                y_tmp.loc[:, 'group_indicator'], return_stats=False)
-        except ValueError:
-            continue
-        if score > score_opt:
-            score_opt = round(score, 3)
-            split_val_opt = round(split_val, 3)
-            lhs_idxs = feature1
-            rhs_idxs = feature2
+    order_x = np.argsort(x_feature, kind='mergesort')
+    x_sorted = x_feature[order_x]
+    time_by_x = time[order_x]
+    numerator_cum = np.cumsum(residual[order_x])
 
-    return score_opt, split_val_opt, lhs_idxs, rhs_idxs
+    candidate_k = np.nonzero(np.diff(x_sorted) != 0)[0] + 1
+    valid = (candidate_k >= min_leaf) & (n - candidate_k >= min_leaf)
+    candidate_k = candidate_k[valid]
+
+    if len(candidate_k) == 0:
+        return 0, None, None, None
+
+    numerator = numerator_cum[candidate_k - 1]
+
+    at_risk_group1 = np.cumsum(time_by_x[:, None] >= unique_times[None, :], axis=0)[candidate_k - 1, :]
+    with np.errstate(divide='ignore', invalid='ignore'):
+        proportion = at_risk_group1 / at_risk[None, :]
+        variance_terms = (
+            proportion * (1 - proportion)
+            * np.where(at_risk[None, :] > 1, (at_risk[None, :] - deaths[None, :]) / (at_risk[None, :] - 1), 0.0)
+            * deaths[None, :]
+        )
+    variance = np.nan_to_num(variance_terms, nan=0.0, posinf=0.0, neginf=0.0).sum(axis=1)
+
+    with np.errstate(divide='ignore', invalid='ignore'):
+        score = np.where(variance > 0, numerator ** 2 / variance, 0.0)
+
+    best_i = np.argmax(score)
+    if score[best_i] <= 0:
+        return 0, None, None, None
+
+    split_val_exact = x_sorted[candidate_k[best_i] - 1]
+    lhs_idxs = np.where(x_feature <= split_val_exact)[0]
+    rhs_idxs = np.where(x_feature > split_val_exact)[0]
+
+    return round(float(score[best_i]), 3), round(float(split_val_exact), 3), lhs_idxs, rhs_idxs

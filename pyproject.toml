@@ -1,0 +1,56 @@
+[project]
+name = "random_survival_forest"
+version = "1.0.0"
+description = "A Random Survival Forest implementation inspired by Ishwaran et al."
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Julian Späth", email = "spaethju@posteo.de" },
+]
+requires-python = ">=3.13"
+keywords = [
+    "survival-analysis",
+    "survival-prediction",
+    "machine-learning",
+    "random-forest",
+    "random-survival-forest",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "numpy>=2.5",
+    "pandas>=3.0",
+    "joblib>=1.5",
+    "lifelines>=0.30",
+    "scikit-learn>=1.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/julianspaeth/random-survival-forest"
+
+[dependency-groups]
+dev = [
+    "pip-audit>=2.10.1",
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.16.0",
+]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["random_survival_forest*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
