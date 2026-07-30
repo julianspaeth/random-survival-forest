@@ -39,8 +39,8 @@ class RandomSurvivalForest:
         """
         Build a forest of trees from the training set (X, y).
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
-        :param y: The target values as a Dataframe with the survival time in the first column and the event
-        in the second with the shape [n_samples, 2]
+        :param y: The target values as a Dataframe with the event indicator in the first column and the survival
+        time in the second with the shape [n_samples, 2]
         :return: self: object
         """
 
@@ -56,10 +56,10 @@ class RandomSurvivalForest:
         self.bootstrap_idxs = self._draw_bootstrap_samples(x)
         num_cores = multiprocessing.cpu_count()
 
-        if self.n_jobs > num_cores or self.n_jobs == -1:
-            self.n_jobs = num_cores
-        elif self.n_jobs is None:
+        if self.n_jobs is None:
             self.n_jobs = 1
+        elif self.n_jobs == -1 or self.n_jobs > num_cores:
+            self.n_jobs = num_cores
 
         trees = Parallel(n_jobs=self.n_jobs)(delayed(self._create_tree)(x, y, i) for i in range(self.n_estimators))
 
@@ -76,7 +76,7 @@ class RandomSurvivalForest:
     def _create_tree(self, x, y, i):
         """
         Grows a survival tree for the bootstrap samples.
-        :param y: label data frame y with survival time as the first column and event as second
+        :param y: label data frame y with event indicator as the first column and survival time as second
         :param x: feature data frame x
         :param i: Indices
         :return: SurvivalTree
@@ -93,21 +93,24 @@ class RandomSurvivalForest:
     def _compute_oob_ensembles(self, xs):
         """
         Compute OOB ensembles.
-        :return: List of oob ensemble for each sample.
+        :return: List of oob ensemble for each sample that has at least one OOB tree, and the indices of those
+        samples (samples present in every tree's bootstrap have no OOB prediction and are excluded).
         """
         results = Parallel(n_jobs=self.n_jobs)(
             delayed(self._compute_oob_ensemble_chf)(sample_idx, xs, self.trees, self.bootstraps) for sample_idx in
             range(xs.shape[0]))
-        oob_ensemble_chfs = [i for i in results if not i.empty]
-        return oob_ensemble_chfs
+        kept_idxs = [i for i, chf in enumerate(results) if not chf.empty]
+        oob_ensemble_chfs = [results[i] for i in kept_idxs]
+        return oob_ensemble_chfs, kept_idxs
 
     def compute_oob_score(self, x, y):
         """
         Compute the oob score (concordance-index).
         :return: c-index of oob samples
         """
-        oob_ensembles = self._compute_oob_ensembles(x)
-        c = concordance_index(y_time=y.iloc[:, 1], y_pred=oob_ensembles, y_event=y.iloc[:, 0])
+        oob_ensembles, kept_idxs = self._compute_oob_ensembles(x)
+        y_oob = y.iloc[kept_idxs]
+        c = concordance_index(y_time=y_oob.iloc[:, 1], y_pred=oob_ensembles, y_event=y_oob.iloc[:, 0])
         return c
 
     def predict(self, xs):
@@ -168,7 +171,8 @@ class SurvivalTree:
         """
         A Survival Tree to predict survival.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
-        :param y: The target values as a Dataframe with the survival time in the first column and the event.
+        :param y: The target values as a Dataframe with the event indicator in the first column and the survival
+        time in the second.
         :param f_idxs: The indices of the features to use.
         :param n_features: The number of features to use.
         :param unique_deaths: The minimum number of unique deaths required to be at a leaf node.
@@ -241,7 +245,8 @@ class Node:
         """
         A Node of the Survival Tree.
         :param x: The input samples. Should be a Dataframe with the shape [n_samples, n_features].
-        :param y: The target values as a Dataframe with the survival time in the first column and the event.
+        :param y: The target values as a Dataframe with the event indicator in the first column and the survival
+        time in the second.
         :param tree: The corresponding Survival Tree
         :param f_idxs: The indices of the features to use.
         :param n_features: The number of features to use.
@@ -288,12 +293,12 @@ class Node:
         lf_idxs, rf_idxs = _select_new_feature_indices(self.x, self.n_features, self.random_instance)
 
         self.lhs = Node(self.x.iloc[lhs_idxs_opt, :], self.y.iloc[lhs_idxs_opt, :], self.tree, lf_idxs,
-                        self.n_features, min_leaf=self.min_leaf, timeline=self.timeline,
-                        random_instance=self.random_instance)
+                        self.n_features, unique_deaths=self.unique_deaths, min_leaf=self.min_leaf,
+                        timeline=self.timeline, random_instance=self.random_instance)
 
         self.rhs = Node(self.x.iloc[rhs_idxs_opt, :], self.y.iloc[rhs_idxs_opt, :], self.tree, rf_idxs,
-                        self.n_features, min_leaf=self.min_leaf, timeline=self.timeline,
-                        random_instance=self.random_instance)
+                        self.n_features, unique_deaths=self.unique_deaths, min_leaf=self.min_leaf,
+                        timeline=self.timeline, random_instance=self.random_instance)
 
         return self
 
